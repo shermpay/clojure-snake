@@ -11,6 +11,8 @@
 
 (def width 80)
 (def height 40)
+(def screen-width (* width 10))
+(def screen-height (* height 10))
 (def point-size 10)
 (def turn-millis 75)
 (def win-length 10)
@@ -61,7 +63,11 @@
 (defn lose?
   "Wins when snake has reached certain length"
   [{[head & body] :body}]
-  (contains? (set body) head))
+  (or (contains? (set body) head)
+      (> (first head) screen-width)
+      (< (first head) 0)
+      (> (second head) screen-height)
+      (< (second head) 0)))
 
 (defn eats?
   "Returns true if head of snake and apple are in the same location"
@@ -122,17 +128,22 @@
   (doseq [point body]
     (fill-point g point color)))
 
-(defn game-panel [snake apple]
+(defn game-panel
+  "Game canvas. Takes a snake and apple to render."
+  [snake apple]
   (seesaw/canvas :id :game-canvas
                  :paint (fn [c g]
                           (try
                             (doto g
+                              (graphics/anti-alias)
                               (paint @apple)
                               (paint @snake)) 
                             (catch Exception e
                               (println e))))))
 
-(defn game []
+(defn game
+  "Game function."
+  []
   (let [snake (ref (create-snake))
         apple (ref (create-apple))
         panel (game-panel snake apple)
