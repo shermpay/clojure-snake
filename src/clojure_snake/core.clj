@@ -1,3 +1,7 @@
+;;; Sherman Pay Jing Hao
+;;; Saturday, 01. March 2014
+;;; Simple snake game
+
 (ns clojure-snake.core
   (:gen-class)
   (:require [seesaw.core :as seesaw]
@@ -5,8 +9,8 @@
             [seesaw.color :as color])
   (:import [java.awt.event KeyEvent]))
 
-(def width 400)
-(def height 200)
+(def width 80)
+(def height 40)
 (def point-size 10)
 (def turn-millis 75)
 (def win-length 10)
@@ -23,8 +27,9 @@
 
 (defn point-to-screen-rect 
   "point to screen rect [x y] -> [x * point-size, y * point-size, point-size, point-size]"
-  [[x y]]
-  [x y point-size point-size])
+  [pt]
+  (map #(* point-size %)
+       [(pt 0) (pt 1) 1 1]))
 
 (defn create-apple 
   "Returns a map of an apple with a random location"
@@ -53,11 +58,10 @@
   [{body :body}]
   (= win-length (count body)))
 
-(defn head-overlaps-body? 
-  "Returns true if head touches any part of body."
+(defn lose?
+  "Wins when snake has reached certain length"
   [{[head & body] :body}]
-  (contains? body head))
-
+  (contains? (set body) head))
 
 (defn eats?
     "Returns true if head of snake and apple are in the same location"
@@ -67,7 +71,9 @@
 (defn turn 
   "Turns the snake in newdir"
   [snake newdir]
-  (assoc snake :dir newdir))
+  (if (= [0 0] (add-points newdir (:dir snake)))
+    snake
+    (assoc snake :dir newdir)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;; MUTABLE ;;;;;;;;;;;;;;;;;;;;;
@@ -114,7 +120,7 @@
 
 (defmethod paint :snake [g {:keys [body color]}]
   (doseq [point body]
-   (fill-point g point color)))
+    (fill-point g point color)))
 
 (defn game-panel [snake apple]
  (seesaw/canvas :id :game-canvas
@@ -132,19 +138,28 @@
         panel (game-panel snake apple)
         game-frame (seesaw/frame :id :game-frame
                                  :title "Snake!"
-                                 :width width
-                                 :height height
+                                 :width 800
+                                 :height 600
                                  :visible? true
-                                 :content panel)]
-    (seesaw/timer (fn [e]
-                    (do
-                      (update-positions snake apple)
-                      (seesaw/repaint! panel))))
-    (seesaw/listen panel :key-pressed)))
+                                 :content panel)
+        timer (seesaw/timer (fn [e]
+                              (do
+                                (update-positions snake apple)
+                                (when (lose? @snake)
+                                  (seesaw/alert "You lose...")
+                                  (reset-game snake apple))
+                                (when (win? @snake)
+                                  (seesaw/alert "You win!")
+                                  (reset-game snake apple))
+                                (seesaw/repaint! panel)))
+                            :start? true
+                            :delay 30)]
+    (seesaw.core/listen game-frame :key-pressed
+                            (fn [k] 
+                              (update-direction snake (dirs (.getKeyCode k)))))))
 
-(defn foo []
-  (let [snake (ref (create-snake))
-        apple (ref (create-apple))]
-    (dotimes [_ 10]
-      (println @snake)
-      (update-positions snake apple))))
+
+(defn -main
+  "Game"
+  [& args]
+  (game))
