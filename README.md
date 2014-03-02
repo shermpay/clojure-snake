@@ -1,36 +1,30 @@
 # clojure-snake
 
-FIXME: description
+Snake game written in Clojure.
+Borrowed example from the book *Programming Clojure by Stuart Halloway*.
+Used Seesaw instead of Swing.
 
 ## Installation
 
-Download from http://example.com/FIXME.
+Download from git@github.com:shermpay/clojure-snake.git
 
 ## Usage
 
-FIXME: explanation
 
-    $ java -jar clojure-snake-0.1.0-standalone.jar [args]
+run `$ java -jar clojure-snake-0.1.0-standalone.jar` at your command line
 
-## Options
-
-FIXME: listing of options this app accepts.
 
 ## Examples
 
-...
+None yet
 
 ### Bugs
 
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
+Many to be discovered
 
 ## License
 
-Copyright © 2014 FIXME
+Copyright © 2014
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.

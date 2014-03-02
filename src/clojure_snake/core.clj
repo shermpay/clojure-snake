@@ -64,9 +64,9 @@
   (contains? (set body) head))
 
 (defn eats?
-    "Returns true if head of snake and apple are in the same location"
-    [{[snake-head] :body} {apple :location}]
-    (= snake-head apple))
+  "Returns true if head of snake and apple are in the same location"
+  [{[snake-head] :body} {apple :location}]
+  (= snake-head apple))
 
 (defn turn 
   "Turns the snake in newdir"
@@ -98,10 +98,10 @@
   [snake apple]
   (dosync
    (if (eats? @snake @apple)
-       (do
-         (ref-set apple (create-apple))
-         (alter snake move :grow))
-       (alter snake move))))
+     (do
+       (ref-set apple (create-apple))
+       (alter snake move :grow))
+     (alter snake move))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;; GUI ;;;;;;;;;;;;;;;;;;;;;
@@ -123,14 +123,14 @@
     (fill-point g point color)))
 
 (defn game-panel [snake apple]
- (seesaw/canvas :id :game-canvas
-                :paint (fn [c g]
-                         (try
-                           (doto g
-                             (paint @apple)
-                             (paint @snake)) 
-                           (catch Exception e
-                             (println e))))))
+  (seesaw/canvas :id :game-canvas
+                 :paint (fn [c g]
+                          (try
+                            (doto g
+                              (paint @apple)
+                              (paint @snake)) 
+                            (catch Exception e
+                              (println e))))))
 
 (defn game []
   (let [snake (ref (create-snake))
@@ -155,8 +155,8 @@
                             :start? true
                             :delay 30)]
     (seesaw.core/listen game-frame :key-pressed
-                            (fn [k] 
-                              (update-direction snake (dirs (.getKeyCode k)))))))
+                        (fn [k] 
+                          (update-direction snake (dirs (.getKeyCode k)))))))
 
 
 (defn -main
