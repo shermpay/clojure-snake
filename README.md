@@ -17,7 +17,7 @@ And have fun!
 
 ## Examples
 
-[![snake-screenshot-1](https://github.com/shermapy/img/snake_screenshot_1.png)]
+[![snake-screenshot-1](https://github.com/shermapy/clojure-snake/img/snake_screenshot_1.png)]
 
 ### Bugs
 
