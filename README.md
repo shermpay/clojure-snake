@@ -13,14 +13,15 @@ Download from git@github.com:shermpay/clojure-snake.git
 
 run `$ java -jar clojure-snake-0.1.0-standalone.jar` at your command line
 
+And have fun!
 
 ## Examples
 
-None yet
+[![snake-screenshot-1](https://github.com/shermapy/img/snake_screenshot_1.png)]
 
 ### Bugs
 
-Many to be discovered
+If you turn fast enough you will lose.
 
 ## License
 

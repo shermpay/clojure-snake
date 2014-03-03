@@ -10,7 +10,7 @@
   (:import [java.awt.event KeyEvent]))
 
 (def width 80)
-(def height 40)
+(def height 60)
 (def screen-width (* width 10))
 (def screen-height (* height 10))
 (def point-size 10)
@@ -64,9 +64,9 @@
   "Wins when snake has reached certain length"
   [{[head & body] :body}]
   (or (contains? (set body) head)
-      (> (first head) screen-width)
+      (>= (first head) width)
       (< (first head) 0)
-      (> (second head) screen-height)
+      (> (second head) height)
       (< (second head) 0)))
 
 (defn eats?
@@ -88,9 +88,10 @@
 (defn reset-game
   "Resets the game. Move the snake back to it's initial position and
   apple to it's initial position"
-  [snake apple]
+  [snake apple score]
   (dosync (ref-set apple (create-apple))
-          (ref-set snake (create-snake)))
+          (ref-set snake (create-snake))
+          (ref-set score 0))
   nil)
 
 (defn update-direction
@@ -101,12 +102,13 @@
 
 (defn update-positions
   "Updates the positions of snake and apple"
-  [snake apple]
+  [snake apple score]
   (dosync
    (if (eats? @snake @apple)
      (do
        (ref-set apple (create-apple))
-       (alter snake move :grow))
+       (alter snake move :grow)
+       (alter score + 1))
      (alter snake move))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -128,7 +130,7 @@
   (doseq [point body]
     (fill-point g point color)))
 
-(defn game-panel
+(defn game-canvas
   "Game canvas. Takes a snake and apple to render."
   [snake apple]
   (seesaw/canvas :id :game-canvas
@@ -146,23 +148,29 @@
   []
   (let [snake (ref (create-snake))
         apple (ref (create-apple))
-        panel (game-panel snake apple)
+        score (ref 0)
+        canvas (game-canvas snake apple)
+        score-label (seesaw/label :id :score-label
+                                  :text (str "Score: " @score)
+                                  :background (color/color "blue")
+                                  :foreground (color/color "white"))
+        game-panel (seesaw/border-panel :center canvas
+                                        :south score-label)
         game-frame (seesaw/frame :id :game-frame
                                  :title "Snake!"
-                                 :width 800
-                                 :height 600
+                                 :width screen-width
+                                 :height (+ screen-height 50)
                                  :visible? true
-                                 :content panel)
+                                 :content game-panel
+                                 :on-close :exit)
         timer (seesaw/timer (fn [e]
                               (do
-                                (update-positions snake apple)
+                                (update-positions snake apple score)
                                 (when (lose? @snake)
                                   (seesaw/alert "You lose...")
-                                  (reset-game snake apple))
-                                (when (win? @snake)
-                                  (seesaw/alert "You win!")
-                                  (reset-game snake apple))
-                                (seesaw/repaint! panel)))
+                                  (reset-game snake apple score))
+                                (seesaw/repaint! game-panel)
+                                (seesaw/config! score-label :text (str "Score: " @score))))
                             :start? true
                             :delay 30)]
     (seesaw.core/listen game-frame :key-pressed
