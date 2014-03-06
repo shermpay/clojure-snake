@@ -40,10 +40,11 @@
    :color (color/color "orange")
    :type :apple})
 
-(defn create-snake 
+(defn
+  create-snake 
   "Returns a map of a snake with a initial size and direction"
   []
-  {:body (list [1 1])
+  {:body (map vector (repeat 1) (range 2 0 -1))
    :dir [0 1]                           ;Default direction
    :color (color/color "green")
    :type :snake})
@@ -74,12 +75,20 @@
   [{[snake-head] :body} {apple :location}]
   (= snake-head apple))
 
+(defn valid-turn? [dir newdir]
+  (not (or (= dir newdir)
+           (and (= [1 0] newdir) (= dir [-1 0]))
+           (and (= [0 1] newdir) (= dir [0 -1]))
+           (and (= [-1 0] newdir) (= dir [1 0]))
+           (and (= [0 -1] newdir) (= dir [0 1])))))
+
 (defn turn 
   "Turns the snake in newdir"
   [snake newdir]
-  (if (= [0 0] (add-points newdir (:dir snake)))
-    snake
-    (assoc snake :dir newdir)))
+  (let [dir (:dir snake)] 
+      (if (valid-turn? dir newdir)
+       (assoc snake :dir newdir)
+       snake)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;; MUTABLE ;;;;;;;;;;;;;;;;;;;;;
@@ -88,22 +97,35 @@
 (defn reset-game
   "Resets the game. Move the snake back to it's initial position and
   apple to it's initial position"
-  [snake apple score]
+  [snake apple score queue]
   (dosync (ref-set apple (create-apple))
           (ref-set snake (create-snake))
-          (ref-set score 0))
+          (ref-set score 0)
+          (ref-set queue clojure.lang.PersistentQueue/EMPTY))
   nil)
+
+(defn update-queue [queue newdir snake]
+  (if (and (valid-turn? (:dir @snake) newdir)
+           (valid-turn? (first @queue) newdir))
+    (dosync (alter queue conj newdir))))
 
 (defn update-direction
   "Updates the direction of the snake"
-  [snake newdir]
-  (when newdir
-    (dosync (alter snake turn newdir))))
+  [snake queue]
+  (dosync
+   (if (not (empty? @queue))
+     (let [newdir (first @queue)]
+       (if (not (nil? newdir))
+         (do
+           (alter snake turn newdir)
+           (if (not (empty? @queue))
+             (alter queue pop))))))))
 
 (defn update-positions
   "Updates the positions of snake and apple"
   [snake apple score]
   (dosync
+   (ensure snake)
    (if (eats? @snake @apple)
      (do
        (ref-set apple (create-apple))
@@ -149,6 +171,7 @@
   (let [snake (ref (create-snake))
         apple (ref (create-apple))
         score (ref 0)
+        input-queue (ref clojure.lang.PersistentQueue/EMPTY)
         canvas (game-canvas snake apple)
         score-label (seesaw/label :id :score-label
                                   :text (str "Score: " @score)
@@ -168,14 +191,15 @@
                                 (update-positions snake apple score)
                                 (when (lose? @snake)
                                   (seesaw/alert "You lose...")
-                                  (reset-game snake apple score))
+                                  (reset-game snake apple score input-queue))
                                 (seesaw/repaint! game-panel)
-                                (seesaw/config! score-label :text (str "Score: " @score))))
+                                (seesaw/config! score-label :text (str "Score: " @score))
+                                (update-direction snake input-queue)))
                             :start? true
                             :delay 30)]
     (seesaw.core/listen game-frame :key-pressed
-                        (fn [k] 
-                          (update-direction snake (dirs (.getKeyCode k)))))))
+                        (fn [k]
+                          (update-queue input-queue (dirs (.getKeyCode k)) snake)))))
 
 
 (defn -main
