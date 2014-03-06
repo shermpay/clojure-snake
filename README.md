@@ -19,10 +19,6 @@ And have fun!
 
 [![snake-screenshot-1](https://github.com/shermapy/img/snake_screenshot_1.png)]
 
-### Bugs
-
-If you turn fast enough you will lose.
-
 ## License
 
 Copyright © 2014
