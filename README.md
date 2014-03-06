@@ -6,7 +6,7 @@ Used Seesaw instead of Swing.
 
 ## Installation
 
-Download from git@github.com:shermpay/clojure-snake.git
+Download from `git@github.com:shermpay/clojure-snake.git`
 
 ## Usage
 
@@ -17,7 +17,7 @@ And have fun!
 
 ## Examples
 
-[![snake-screenshot-1](https://github.com/shermapy/img/snake_screenshot_1.png)]
+![snake-screenshot-1](img/snake_screenshot_1.png)
 
 ## License
 
